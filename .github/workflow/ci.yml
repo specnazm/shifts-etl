@@ -6,18 +6,75 @@ on:
     branches: [develop, main]
 
 jobs:
-
   build:
-    runs-on: ubuntu-latest   
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./etl
+    strategy:
+      matrix:
+        python: [3.8]
+        poetry-version: [1.1.12]
     steps:
     #----------------------------------------------
-    #       check-out repo
+    #       check-out repo and set-up python
     #----------------------------------------------
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+            fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
     #----------------------------------------------
     #       check commit message
     #----------------------------------------------
       - name : Check commit messages
-        uses: wagoid/commitlint-github-action@v4 
+        uses: wagoid/commitlint-github-action@v4
+    #----------------------------------------------
+    #     load cached poetry if cache exists
+    #----------------------------------------------
+      - name: Load cached Poetry installation
+        id: cached-poetry-installation
+        uses: actions/cache@v2
+        with:
+          path: ~/.local 
+          key: poetry-0
+    #----------------------------------------------
+    # install & configure poetry if cache does not exist
+    #----------------------------------------------  
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: ${{ matrix.poetry-version }}
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+        if: steps.cached-poetry-installation.outputs.cache-hit != 'true'
+    #----------------------------------------------
+    #  install dependencies if cache does not exist
+    #----------------------------------------------
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            venv-${{ runner.os }}-
+      - name: Install dependencies
+        run: poetry install
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+    #----------------------------------------------
+    #  check code with black and flake8
+    #----------------------------------------------
+      - name: Check lint with Black
+        uses: psf/black@stable
+        with:
+          options: "--check --verbose"
+          src: "./etl"
+          version: "22.3.0"
+      - name: flake8 Lint
+        uses: py-actions/flake8@v2
+        with:
+          path: "./etl"
