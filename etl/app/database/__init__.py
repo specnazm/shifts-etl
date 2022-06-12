@@ -12,8 +12,9 @@ def save_df(df, table_name):
         }
         df.write.jdbc(url=url, table=table_name, mode=mode, properties=properties)
 
+
     except Exception as error:
-        log.error("Failed to insert record into ${table_name} table")
+        log.error(f"Failed to insert record into ${table_name} table, reason: {error}")
 
 def read_df(table_name: str):
     try:

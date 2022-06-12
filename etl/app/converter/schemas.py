@@ -8,6 +8,7 @@ from pyspark.sql.types import (
     BooleanType,
     ArrayType,
     FloatType,
+    DoubleType
 )
 
 award_schema = StructType(
@@ -45,5 +46,14 @@ shift_schema = StructType(
         StructField("breaks", ArrayType(break_schema)),
         StructField("allowances", ArrayType(allowance_schema)),
         StructField("award_interpretations", ArrayType(award_schema)),
+    ]
+)
+
+
+kpi_schema = StructType(
+    [
+        StructField("kpi_name", StringType(), True),
+        StructField("kpi_date", StringType(), True),
+        StructField("kpi_value", DoubleType(), True)
     ]
 )

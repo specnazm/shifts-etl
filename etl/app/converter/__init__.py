@@ -52,7 +52,6 @@ class ShiftConverter(Converter):
     def transform_df(self, df):
         df = self.__rename_attributes(df)
         df = self.__convert_date_attr(df)
-        # df = self.__calc_total_cost(df)
         df = df.select(*self.columns)
 
         return df
@@ -74,14 +73,6 @@ class ShiftConverter(Converter):
         )
 
         return df
-    def __calc_total_cost(self, df):
-        df.select(
-            'shift_id',
-            expr('AGGREGATE(allowances, 0, (acc, x) -> acc + x)').alias('Total_allowance_cost')
-        ).show()
-
-        return df
-
 
 class BreakConverter(Converter):
     def __init__(self, spark):

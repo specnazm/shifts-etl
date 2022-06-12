@@ -11,7 +11,7 @@ def main():
     :return: None
     """
 
-    # extract_models_job()
+    extract_models_job()
     calculate_kpis_job()
 
     return None
@@ -80,7 +80,7 @@ def transform_data(df_dict):
     # transformed_dict['shifts'] = shifts
 
     return transformed_dict
-#
+
 # def calc_total_cost(allowance_df, award_df, shift_df):
 #     allowance_df_with_cost = allowance_df.groupBy("shift_id").agg(
 #         _sum("allowance_cost").alias("total_allowance_cost")
