@@ -1,4 +1,4 @@
-from pyspark.sql.functions import sum as _sum
+from pyspark.sql.functions import sum as _sum, col
 from app.converter import *
 from app.database import save_df
 from app.jobs.utils import *
@@ -43,6 +43,7 @@ def extract_data(json_results):
     :param spark: Spark session object.
     :return: Spark DataFrame.
     """
+    log.info("Extracting data")
     shift_df = ShiftConverter(spark).create_df(json_results)
     breaks_df = BreakConverter(spark).create_df(shift_df)
     allowance_df = AllowanceConverter(spark).create_df(shift_df)
@@ -64,6 +65,7 @@ def transform_data(df_dict):
         Street.
     :return: Transformed DataFrame.
     """
+    log.info("Transforming")
     converters = [
         ShiftConverter(spark),
         BreakConverter(spark),
@@ -76,24 +78,24 @@ def transform_data(df_dict):
         df = df_dict[conv.name]
         transformed_dict[conv.name] = conv.transform_df(df)
 
-    # shifts = calc_total_cost(transformed_dict['allowances'], transformed_dict['award_interpretations'], transformed_dict['shifts'])
-    # transformed_dict['shifts'] = shifts
+    shifts = calc_total_cost(transformed_dict['allowances'], transformed_dict['award_interpretations'], transformed_dict['shifts'])
+    transformed_dict['shifts'] = shifts
 
     return transformed_dict
 
-# def calc_total_cost(allowance_df, award_df, shift_df):
-#     allowance_df_with_cost = allowance_df.groupBy("shift_id").agg(
-#         _sum("allowance_cost").alias("total_allowance_cost")
-#     )
-#     award_df_with_cost = award_df.groupBy("shift_id").agg(
-#         _sum("award_cost").alias("total_award_cost")
-#     )
-#     joined_df = allowance_df_with_cost.join(award_df_with_cost, ['shift_id'])\
-#                 .withColumn("shift_cost", col("total_allowance_cost") + col("total_award_cost"))
-#     shift_df = shift_df.join(joined_df, ['shift_id'], 'left_outer').select(shift_df["*"],joined_df["shift_cost"])
-#
-#
-#     return shift_df
+def calc_total_cost(allowance_df, award_df, shift_df):
+    allowance_df_with_cost = allowance_df.groupBy("shift_id").agg(
+        _sum("allowance_cost").alias("total_allowance_cost")
+    )
+    award_df_with_cost = award_df.groupBy("shift_id").agg(
+        _sum("award_cost").alias("total_award_cost")
+    )
+    joined_df = allowance_df_with_cost.join(award_df_with_cost, ['shift_id'])\
+                .withColumn("shift_cost", col("total_allowance_cost") + col("total_award_cost"))
+    shift_df = shift_df.join(joined_df, ['shift_id'], 'left_outer').select(shift_df["*"],joined_df["shift_cost"])
+
+
+    return shift_df
 
 def load_data(df_dict):
     """Collect data locally and write to PostgreSQL.
@@ -101,6 +103,7 @@ def load_data(df_dict):
     :param df: DataFrame to print.
     :return: None
     """
+    log.info("saving data")
     for key, df in df_dict.items():
         save_df(df, table_name=key)
 

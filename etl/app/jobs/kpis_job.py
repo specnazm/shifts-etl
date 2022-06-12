@@ -60,12 +60,12 @@ def total_paid_breaks(break_df):
 
 def min_shift_len(shifts_df):
     log.info("Started task : MIN SHIFT LEN")
-
     if (not shifts_df):
         return
     shifts_df = shifts_df.withColumn('len_hours', round((col("shift_finish").cast("long") - col('shift_start').cast("long"))/3600))
     stats_df = shifts_df.select(min("len_hours").alias('min_len_hours')).collect()
     min_length = stats_df[0]['min_len_hours']
+    print(min_length)
 
     return min_length
 

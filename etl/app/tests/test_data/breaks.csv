@@ -1,0 +1,5 @@
+break_id,shift_id,break_start,break_finish,is_paid
+1,1,1612258200,1612259100,True
+2,1,1612251900,1612252500,True
+3,3,1643790600,1643791800,False
+
