@@ -6,7 +6,7 @@ Extract shift data from shifts api, transforms it and load to PosgtreSQL.
 docker-compose and docker
 
 
-### Docker
+### Start
 
 ``` 
   $ git clone https://github.com/specnazm/shifts-etl
