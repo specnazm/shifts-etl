@@ -8,6 +8,7 @@ authors = ["specnazm <laketic.milena98@gmail.com>"]
 python = "^3.8"
 flake8 = "^4.0.1"
 black = "^22.3.0"
+pyspark = "^3.2.1"
 
 [tool.poetry.dev-dependencies]
 
