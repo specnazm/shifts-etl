@@ -1,11 +1,19 @@
 from app.dependencies.spark import start_spark
-from pyspark.sql.functions import col, concat_ws, lit, to_date, to_timestamp,from_unixtime, explode
+from pyspark.sql.functions import (
+    col,
+    concat_ws,
+    lit,
+    to_date,
+    to_timestamp,
+    from_unixtime,
+    explode,
+)
 import requests
 from app.converter import *
 from app.database import save_df
 from app.jobs.utils import *
 
-spark, log = start_spark(app_name='shift-app')
+spark, log = start_spark(app_name="shift-app")
 
 
 def main():
@@ -19,14 +27,15 @@ def main():
 
     return None
 
+
 @log_status
 def extract_models_job():
 
     called: int = 0
     next_url: str = BASE_URL + INITIAL_URL
-    while (next_url and called < API_CALLS_LIMIT):
+    while next_url and called < API_CALLS_LIMIT:
         response = send_request(next_url)
-        if (not response):
+        if not response:
             log.error("extract_models_job stopped")
             break
 
@@ -42,7 +51,6 @@ def extract_models_job():
         called += 1
 
 
-
 def extract_data(json_results):
     """Load data from api file format.
 
@@ -55,11 +63,12 @@ def extract_data(json_results):
     award_df = AwardConverter(spark).create_df(shift_df)
 
     return {
-            'shifts': shift_df,
-            'breaks': breaks_df,
-            'allowances': allowance_df,
-            'award_interpretations': award_df
+        "shifts": shift_df,
+        "breaks": breaks_df,
+        "allowances": allowance_df,
+        "award_interpretations": award_df,
     }
+
 
 def transform_data(df_dict):
     """Transform original dataset.
@@ -69,7 +78,12 @@ def transform_data(df_dict):
         Street.
     :return: Transformed DataFrame.
     """
-    converters = [ShiftConverter(spark), BreakConverter(spark), AllowanceConverter(spark), AwardConverter(spark)]
+    converters = [
+        ShiftConverter(spark),
+        BreakConverter(spark),
+        AllowanceConverter(spark),
+        AwardConverter(spark),
+    ]
 
     transformed_dict = {}
     for conv in converters:
@@ -77,6 +91,7 @@ def transform_data(df_dict):
         transformed_dict[conv.name] = conv.transform_df(df)
 
     return transformed_dict
+
 
 def load_data(df_dict):
     """Collect data locally and write to PostgreSQL.
@@ -93,7 +108,6 @@ def calculate_kpis_job():
     pass
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
     spark.stop()

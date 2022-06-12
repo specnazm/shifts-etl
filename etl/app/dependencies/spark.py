@@ -1,6 +1,7 @@
 from pyspark.sql import SparkSession
 from app.dependencies.logger import Log4j
 
+
 def start_spark(app_name):
     """Start Spark session, get Spark logger and load config files.
 
