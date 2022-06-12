@@ -42,8 +42,6 @@ class SparkETLTests(unittest.TestCase):
         spark_builder = SparkSession.builder.appName('testing-app')
         self.spark = spark_builder.getOrCreate()
 
-        self.test_data_path = 'test_data.json'
-
     def tearDown(self):
         """Stop Spark
         """

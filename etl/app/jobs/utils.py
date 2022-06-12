@@ -8,6 +8,10 @@ INITIAL_URL = f"/api/shifts?limit={RESPONSE_LIMIT}"
 
 
 def get_next_url(response):
+    """
+    Generates url for next page for paginated API
+    :param response: Response object from last page
+    """
     if "next" in response["links"]:
         return BASE_URL + response["links"].get("next")
 
@@ -15,6 +19,10 @@ def get_next_url(response):
 
 
 def send_request(url):
+    """
+    Wrapper arround 'requests' package for fetching data
+    :param url: Url from which to fetch
+    """
     try:
         response = requests.get(url)
         json = response.json()
@@ -28,6 +36,11 @@ def send_request(url):
 
 
 def log_status(func):
+    """
+    Decorator function for logging before and after job execution
+    :param url: Url from which to fetch
+    """
+
     def wrapper(*args, **kwargs):
         log.warn("job is up and running")
 
