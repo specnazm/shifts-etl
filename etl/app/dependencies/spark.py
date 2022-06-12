@@ -18,3 +18,6 @@ def start_spark(app_name):
     spark_logger = Log4j(spark_sess)
 
     return spark_sess, spark_logger
+
+
+spark, log = start_spark(app_name="shift-app")

@@ -1,4 +1,4 @@
-from pyspark.sql.functions import col, to_date, to_timestamp, from_unixtime, explode
+from pyspark.sql.functions import col, to_date, to_timestamp, from_unixtime, explode, expr
 from abc import ABC, abstractmethod
 from app.converter.schemas import *
 
@@ -52,6 +52,7 @@ class ShiftConverter(Converter):
     def transform_df(self, df):
         df = self.__rename_attributes(df)
         df = self.__convert_date_attr(df)
+        # df = self.__calc_total_cost(df)
         df = df.select(*self.columns)
 
         return df
@@ -71,6 +72,13 @@ class ShiftConverter(Converter):
             .withColumn("shift_start", to_timestamp(col("shift_start") / 1e3))
             .withColumn("shift_finish", to_timestamp(col("shift_finish") / 1e3))
         )
+
+        return df
+    def __calc_total_cost(self, df):
+        df.select(
+            'shift_id',
+            expr('AGGREGATE(allowances, 0, (acc, x) -> acc + x)').alias('Total_allowance_cost')
+        ).show()
 
         return df
 

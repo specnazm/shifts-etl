@@ -5,6 +5,8 @@ services:
     build: api/.
     container_name: shifts-api
     restart: on-failure
+    networks:
+      - net
     ports:
       - "8000:8000"
 
@@ -37,8 +39,64 @@ services:
       - postgres
     restart: unless-stopped
 
+  spark-master:
+    image: bde2020/spark-master:3.0.1-hadoop3.2
+    container_name: spark-master
+    environment:
+    - PYTHONPATH=/home
+    - PYSPARK_PYTHON=/usr/bin/python3.7
+    networks:
+      - postgres
+      - net
+    ports:
+      - 8080:8080
+      - 7077:7077
+    volumes:
+      - ./etl:/home/
+
+  spark-worker1:
+    image: bde2020/spark-worker:3.0.1-hadoop3.2
+    container_name: spark-worker1
+    networks:
+      - net
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+    ports:
+      - 8081:8081
+
+
+
+  spark-worker2:
+    image: bde2020/spark-worker:3.0.1-hadoop3.2
+    container_name: spark-worker2
+    networks:
+      - net
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+    ports:
+      - 8082:8081
+
+
+#  spark-starter:
+#    build:
+#      context: ./etl
+#      dockerfile: starter/Dockerfile
+#    container_name: spark-starter
+#    depends_on:
+#      - spark-master
+#    environment:
+#      - SPARK_MASTER=spark://spark-master:7077
+
+
+
 networks:
   postgres:
+    driver: bridge
+  net:
     driver: bridge
 
 volumes:

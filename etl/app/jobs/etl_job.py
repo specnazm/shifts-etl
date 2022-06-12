@@ -1,20 +1,9 @@
-from app.dependencies.spark import start_spark
-from pyspark.sql.functions import (
-    col,
-    concat_ws,
-    lit,
-    to_date,
-    to_timestamp,
-    from_unixtime,
-    explode,
-)
-import requests
+from pyspark.sql.functions import sum as _sum
 from app.converter import *
 from app.database import save_df
 from app.jobs.utils import *
-
-spark, log = start_spark(app_name="shift-app")
-
+from app.dependencies.spark import spark, log
+from app.jobs.kpis_job import calculate_kpis_job
 
 def main():
     """Main ETL script definition.
@@ -22,7 +11,7 @@ def main():
     :return: None
     """
 
-    extract_models_job()
+    # extract_models_job()
     calculate_kpis_job()
 
     return None
@@ -40,11 +29,8 @@ def extract_models_job():
             break
 
         df_dict = extract_data(response["results"])
-        # for df in df_dict.values():
-        #     df.show()
         transformed_dict = transform_data(df_dict)
-        # for df in transformed_dict.values():
-        #     df.show()
+
         load_data(transformed_dict)
 
         next_url = get_next_url(response)
@@ -90,8 +76,24 @@ def transform_data(df_dict):
         df = df_dict[conv.name]
         transformed_dict[conv.name] = conv.transform_df(df)
 
-    return transformed_dict
+    # shifts = calc_total_cost(transformed_dict['allowances'], transformed_dict['award_interpretations'], transformed_dict['shifts'])
+    # transformed_dict['shifts'] = shifts
 
+    return transformed_dict
+#
+# def calc_total_cost(allowance_df, award_df, shift_df):
+#     allowance_df_with_cost = allowance_df.groupBy("shift_id").agg(
+#         _sum("allowance_cost").alias("total_allowance_cost")
+#     )
+#     award_df_with_cost = award_df.groupBy("shift_id").agg(
+#         _sum("award_cost").alias("total_award_cost")
+#     )
+#     joined_df = allowance_df_with_cost.join(award_df_with_cost, ['shift_id'])\
+#                 .withColumn("shift_cost", col("total_allowance_cost") + col("total_award_cost"))
+#     shift_df = shift_df.join(joined_df, ['shift_id'], 'left_outer').select(shift_df["*"],joined_df["shift_cost"])
+#
+#
+#     return shift_df
 
 def load_data(df_dict):
     """Collect data locally and write to PostgreSQL.
@@ -101,11 +103,6 @@ def load_data(df_dict):
     """
     for key, df in df_dict.items():
         save_df(df, table_name=key)
-
-
-@log_status
-def calculate_kpis_job():
-    pass
 
 
 if __name__ == "__main__":

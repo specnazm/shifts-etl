@@ -1,4 +1,5 @@
 import requests
+from app.dependencies.spark import log
 
 API_CALLS_LIMIT = 100
 RESPONSE_LIMIT = 30
@@ -28,8 +29,6 @@ def send_request(url):
 
 def log_status(func):
     def wrapper(*args, **kwargs):
-        from app.jobs.etl_job import log
-
         log.warn("job is up and running")
 
         result = func(*args, **kwargs)
