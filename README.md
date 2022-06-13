@@ -21,6 +21,11 @@ docker-compose and docker
 ``` 
   $ docker-compose logs --follow spark-master
 ```
+* For first task logs :Extracting data, Transforming and Saving data will be displayed more than once (it's ok :) until all data is collected
+* For second task logs are:  Started task : MEAN BREAK TIME, Started task : PAID BREAKS COUNT etc.
+
+
+
 * When test are done last line should be:
 ```
 Ran 5 tests in ts
